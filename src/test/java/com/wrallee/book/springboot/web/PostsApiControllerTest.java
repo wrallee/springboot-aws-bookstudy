@@ -2,6 +2,7 @@ package com.wrallee.book.springboot.web;
 
 import com.wrallee.book.springboot.domain.posts.Posts;
 import com.wrallee.book.springboot.domain.posts.PostsRepository;
+import com.wrallee.book.springboot.web.dto.PostsResponseDto;
 import com.wrallee.book.springboot.web.dto.PostsSaveRequestDto;
 import com.wrallee.book.springboot.web.dto.PostsUpdateRequestDto;
 import org.junit.After;
@@ -97,4 +98,53 @@ public class PostsApiControllerTest {
         assertThat(all.get(0).getContent()).isEqualTo(expectedContent);
 
     }
+
+    @Test
+    public void postsFindById() throws Exception {
+        // given
+        Posts posts = postsRepository.save(Posts.builder()
+                .title("title")
+                .content("content")
+                .author("author")
+                .build());
+
+        Long generatedId = posts.getId();
+
+        String url = "http://localhost:" + port + "/api/v1/posts/" + generatedId;
+
+        // when
+        ResponseEntity<PostsResponseDto> responseEntity = restTemplate.getForEntity(url, PostsResponseDto.class);
+
+        // then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isNotNull();
+
+        PostsResponseDto dto = responseEntity.getBody();
+        assertThat(dto.getId()).isEqualTo(generatedId);
+    }
+
+    @Test
+    public void postsDelete() throws Exception {
+        // given
+        Posts posts = postsRepository.save(Posts.builder()
+                .title("title")
+                .content("content")
+                .author("author")
+                .build());
+
+        Long generatedId = posts.getId();
+        String url = "http://localhost:" + port + "/api/v1/posts/" + generatedId;
+
+        HttpEntity<Long> requestEntity = new HttpEntity<>(generatedId);
+
+        // when
+        ResponseEntity<Long> responseEntity = restTemplate.exchange(url, HttpMethod.DELETE, requestEntity, Long.class);
+
+        // then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isGreaterThan(0L);
+
+        assertThat(postsRepository.findById(generatedId)).isEmpty();
+    }
+
 }

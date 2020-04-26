@@ -29,10 +29,10 @@ public class PostsRepositoryTest {
         String content = "Contents sample";
 
         postsRepository.save(Posts.builder()
-                                .title(title)
-                                .content(content)
-                                .author("wrallee@naver.com")
-                                .build());
+                .title(title)
+                .content(content)
+                .author("wrallee@naver.com")
+                .build());
 
         // when
         List<Posts> postsList = postsRepository.findAll();
